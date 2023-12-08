@@ -206,6 +206,7 @@ class BookManagementSystem(QMainWindow):
         price_label = QLabel("Price:")
 
         self.isbn_input = QLineEdit(book[0])
+        self.isbn_input.setReadOnly(True)
         self.title_input = QLineEdit(book[1])
         self.author_input = QLineEdit(book[2])
         self.year_input = QLineEdit(str(book[3]))
@@ -250,18 +251,20 @@ class BookManagementSystem(QMainWindow):
         try:
             year = int(year)
             price = int(price)
-        except ValueError:
-            self.show_error_dialog("Year and price must be valid numbers.")
+            if year < 1900 or year > 2024:
+                raise ValueError("Year must be between 1900 and 2024.")
+            if price <= 0:
+                raise ValueError("Price must be greater than 0.")
+        except ValueError as e:
+            self.show_error_dialog(str(e))
             return
 
         if self.is_isbn_duplicate(isbn):
-            self.show_error_dialog("ISBN must be unique.")
+            self.show_error_dialog("ISBN already exists.")
             return
 
         self.insert_book(isbn, title, author, year, price)
-
         self.show_success_dialog("Book added successfully.")
-
         self.show_main_page()
 
     def edit_book(self, isbn):
@@ -270,15 +273,31 @@ class BookManagementSystem(QMainWindow):
         year = self.year_input.text()
         price = self.price_input.text()
 
-        if not title or not author or not year or not price:
-            self.show_error_dialog("All fields must be filled.")
+        # Check if any changes were made
+        current_values = self.load_book_by_isbn(isbn)
+        if (
+            title == current_values[1]
+            and author == current_values[2]
+            and year == str(current_values[3])
+            and price == str(current_values[4])
+        ):
+            self.show_info_dialog("No changes made. Book remains the same.")
+            self.show_main_page()
             return
 
         try:
             year = int(year)
             price = int(price)
-        except ValueError:
-            self.show_error_dialog("Year and price must be valid numbers.")
+            if year < 1900 or year > 2024:
+                raise ValueError("Year must be between 1900 and 2024.")
+            if price <= 0:
+                raise ValueError("Price must be greater than 0.")
+        except ValueError as e:
+            self.show_error_dialog(str(e))
+            return
+
+        if not title or not author:
+            self.show_error_dialog("Title and Author fields must be filled.")
             return
 
         self.update_book(isbn, title, author, year, price)
@@ -347,11 +366,24 @@ class BookManagementSystem(QMainWindow):
         except mysql.connector.Error as err:
             self.show_error_dialog(f"Error updating book: {err}")
 
+    def load_book_by_isbn(self, isbn):
+        try:
+            query = "SELECT * FROM book WHERE ISBN = %s"
+            cursor.execute(query, (isbn,))
+            book = cursor.fetchone()
+            return book
+        except mysql.connector.Error as err:
+            self.show_error_dialog(f"Error loading book by ISBN: {err}")
+            return None
+
     def show_success_dialog(self, message):
         QMessageBox.information(self, "Success", message, QMessageBox.Ok)
 
     def show_error_dialog(self, message):
         QMessageBox.critical(self, "Error", message, QMessageBox.Ok)
+
+    def show_info_dialog(self, message):
+        QMessageBox.information(self, "Information", message, QMessageBox.Ok)
 
 
 def main():
