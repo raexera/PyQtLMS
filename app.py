@@ -11,6 +11,9 @@ from PyQt5.QtWidgets import (
     QTableWidgetItem,
     QLineEdit,
     QMessageBox,
+    QScrollArea,
+    QSizePolicy,
+    QHeaderView,
 )
 import mysql.connector
 
@@ -36,19 +39,23 @@ class BookManagementSystem(QMainWindow):
 
         self.setStyleSheet(
             """
+            *{
+                background-color: #24273a;
+                color: #cad3f5;
+            }
             QMainWindow {
                 background-color: #24273a;
             }
             
             QPushButton {
                 background-color: #8aadf4;
-                color: #cad3f5;
+                color: #24273a;
                 padding: 8px 16px;
                 border: none;
                 border-radius: 4px;
             }
             QPushButton:hover {
-                background-color: #4e628a;
+                background-color: #7dc4e4;
             }
             QLineEdit {
                 padding: 6px;
@@ -58,9 +65,7 @@ class BookManagementSystem(QMainWindow):
                 color: #cad3f5;
             }
             QTableWidget {
-                border: 1px solid #cad3f5;
-                border-radius: 4px;
-                margin-top: 10px;
+                border: none;
             }
             QLabel {
                 color: #cad3f5;
@@ -107,10 +112,15 @@ class BookManagementSystem(QMainWindow):
                     table.setItem(row, col, item)
 
                 edit_button = QPushButton("Edit")
+                edit_button.setMinimumSize(40, 20)
+                edit_button.setStyleSheet("padding: 4px 8px; color: #000;")
                 edit_button.clicked.connect(
                     lambda _, b=book: self.show_edit_book_page(b)
                 )
+
                 delete_button = QPushButton("Delete")
+                delete_button.setMinimumSize(40, 20)
+                delete_button.setStyleSheet("padding: 4px 8px; color: #000;")
                 delete_button.clicked.connect(
                     lambda _, b=book: self.confirm_delete_book(b)
                 )
@@ -124,7 +134,21 @@ class BookManagementSystem(QMainWindow):
 
                 table.setCellWidget(row, 5, widget)
 
-            self.main_layout.addWidget(table)
+            # Use QScrollArea to contain the table
+            scroll_area = QScrollArea()
+            scroll_area.setWidgetResizable(True)
+
+            table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+            scroll_area.setWidget(table)
+
+            self.main_layout.addWidget(scroll_area, 1)
+
+            table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+            table.horizontalHeader().setStretchLastSection(True)
+
+            vertical_header = table.verticalHeader()
+            vertical_header.setDefaultSectionSize(50)
 
         add_book_button = QPushButton("Add New Book")
         add_book_button.clicked.connect(self.show_add_book_page)

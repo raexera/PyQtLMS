@@ -9,3 +9,4 @@ CREATE TABLE `book` (
   `year_published` INT(11) NOT NULL,
   `price` INT(11) NOT NULL
 );
+
