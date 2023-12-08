@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QSizePolicy,
     QHeaderView,
 )
+from PyQt5.QtCore import Qt
 import mysql.connector
 
 
@@ -62,6 +63,7 @@ class BookManagementSystem(QMainWindow):
             *{
                 background-color: #24273a;
                 color: #cad3f5;
+                font-size: 14px;
             }
             QMainWindow {
                 background-color: #24273a;
@@ -89,8 +91,6 @@ class BookManagementSystem(QMainWindow):
             }
             QLabel {
                 color: #cad3f5;
-                font-size: 18px;
-                margin-bottom: 6px;
             }
         """
         )
@@ -100,8 +100,13 @@ class BookManagementSystem(QMainWindow):
 
         self.main_layout = QVBoxLayout(self.central_widget)
 
+        self.banner_label = QLabel("Library Management System")
+        self.banner_label.setAlignment(Qt.AlignCenter)
+        self.banner_label.setStyleSheet("font-size: 32px; color: #8aadf4;")
+
         self.start_button = QPushButton("Start")
         self.start_button.clicked.connect(self.show_main_page)
+        self.main_layout.addWidget(self.banner_label)
         self.main_layout.addWidget(self.start_button)
 
     def clear_layout(self):
@@ -177,18 +182,24 @@ class BookManagementSystem(QMainWindow):
     def show_add_book_page(self):
         self.clear_layout()
 
-        add_book_label = QLabel("Add New Book:")
-        isbn_label = QLabel("ISBN:")
-        title_label = QLabel("Title:")
-        author_label = QLabel("Author:")
-        year_label = QLabel("Year Published:")
-        price_label = QLabel("Price:")
+        add_book_label = QLabel("Add New Book")
+        add_book_label.setStyleSheet("font-size: 24px; color: #8aadf4;")
+        add_book_label.setAlignment(Qt.AlignCenter)
 
         self.isbn_input = QLineEdit()
+        self.isbn_input.setPlaceholderText("ISBN")
+
         self.title_input = QLineEdit()
+        self.title_input.setPlaceholderText("Title")
+
         self.author_input = QLineEdit()
+        self.author_input.setPlaceholderText("Author")
+
         self.year_input = QLineEdit()
+        self.year_input.setPlaceholderText("Year Published")
+
         self.price_input = QLineEdit()
+        self.price_input.setPlaceholderText("Price")
 
         submit_button = QPushButton("Submit")
         submit_button.clicked.connect(self.add_book)
@@ -196,18 +207,23 @@ class BookManagementSystem(QMainWindow):
         back_button = QPushButton("Back")
         back_button.clicked.connect(self.show_main_page)
 
+        back_submit_layout = QHBoxLayout()
+        back_submit_layout.addWidget(back_button)
+        back_submit_layout.addWidget(submit_button)
+
+        year_price_layout = QHBoxLayout()
+        year_price_layout.addWidget(self.year_input)
+        year_price_layout.addWidget(self.price_input)
+
         layout = QVBoxLayout()
         layout.addWidget(add_book_label)
-        layout.addWidget(isbn_label)
         layout.addWidget(self.isbn_input)
-        layout.addWidget(title_label)
         layout.addWidget(self.title_input)
-        layout.addWidget(author_label)
         layout.addWidget(self.author_input)
-        layout.addWidget(year_label)
+        layout.addLayout(year_price_layout)
         layout.addWidget(self.year_input)
-        layout.addWidget(price_label)
         layout.addWidget(self.price_input)
+        layout.addLayout(back_submit_layout)
         layout.addWidget(submit_button)
         layout.addWidget(back_button)
 
@@ -219,18 +235,23 @@ class BookManagementSystem(QMainWindow):
         self.clear_layout()
 
         edit_book_label = QLabel("Edit Book:")
-        isbn_label = QLabel("ISBN:")
-        title_label = QLabel("Title:")
-        author_label = QLabel("Author:")
-        year_label = QLabel("Year Published:")
-        price_label = QLabel("Price:")
+        edit_book_label.setStyleSheet("font-size: 24px; color: #8aadf4;")
+        edit_book_label.setAlignment(Qt.AlignCenter)
 
         self.isbn_input = QLineEdit(book[0])
         self.isbn_input.setReadOnly(True)
-        self.title_input = QLineEdit(book[1])
-        self.author_input = QLineEdit(book[2])
-        self.year_input = QLineEdit(str(book[3]))
-        self.price_input = QLineEdit(str(book[4]))
+
+        self.title_input = QLineEdit()
+        self.title_input.setText(book[1])
+
+        self.author_input = QLineEdit()
+        self.author_input.setText(book[2])
+
+        self.year_input = QLineEdit()
+        self.year_input.setText(str(book[3]))
+
+        self.price_input = QLineEdit()
+        self.price_input.setText(str(book[4]))
 
         submit_button = QPushButton("Submit")
         submit_button.clicked.connect(lambda: self.edit_book(book[0]))
@@ -238,18 +259,23 @@ class BookManagementSystem(QMainWindow):
         back_button = QPushButton("Back")
         back_button.clicked.connect(self.show_main_page)
 
+        back_submit_layout = QHBoxLayout()
+        back_submit_layout.addWidget(back_button)
+        back_submit_layout.addWidget(submit_button)
+
+        year_price_layout = QHBoxLayout()
+        year_price_layout.addWidget(self.year_input)
+        year_price_layout.addWidget(self.price_input)
+
         layout = QVBoxLayout()
         layout.addWidget(edit_book_label)
-        layout.addWidget(isbn_label)
         layout.addWidget(self.isbn_input)
-        layout.addWidget(title_label)
         layout.addWidget(self.title_input)
-        layout.addWidget(author_label)
         layout.addWidget(self.author_input)
-        layout.addWidget(year_label)
+        layout.addLayout(year_price_layout)
         layout.addWidget(self.year_input)
-        layout.addWidget(price_label)
         layout.addWidget(self.price_input)
+        layout.addLayout(back_submit_layout)
         layout.addWidget(submit_button)
         layout.addWidget(back_button)
 
