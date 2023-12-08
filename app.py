@@ -12,7 +12,6 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QMessageBox,
 )
-
 import mysql.connector
 
 DB_HOST = "localhost"
@@ -26,23 +25,48 @@ db_connection = mysql.connector.connect(
 cursor = db_connection.cursor()
 
 
-class ColorScheme:
-    def __init__(self):
-        self.text = "#000000"
-        self.accent = "#0000FF"
-        self.background = "#FFFFFF"
-        self.error = "#FF0000"
-
-
 class BookManagementSystem(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.color_scheme = ColorScheme()
         self.init()
 
     def init(self):
         self.setWindowTitle("Library Management System")
         self.setGeometry(100, 100, 800, 600)
+
+        self.setStyleSheet(
+            """
+            QMainWindow {
+                background-color: #24273a;
+            }
+            
+            QPushButton {
+                background-color: #8aadf4;
+                color: #cad3f5;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #4e628a;
+            }
+            QLineEdit {
+                padding: 6px;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+            }
+            QTableWidget {
+                border: 1px solid #dee2e6;
+                border-radius: 4px;
+                margin-top: 10px;
+            }
+            QLabel {
+                color: #cad3f5;
+                font-size: 18px;
+                margin-bottom: 6px;
+            }
+        """
+        )
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -54,30 +78,23 @@ class BookManagementSystem(QMainWindow):
         self.main_layout.addWidget(self.start_button)
 
     def clear_layout(self):
-        # Clear existing widgets from the main layout
         for i in reversed(range(self.main_layout.count())):
             widget = self.main_layout.itemAt(i).widget()
             if widget:
                 widget.setParent(None)
 
     def show_main_page(self):
-        # Clear existing widgets from the main layout
         self.clear_layout()
 
-        # Load all books from the database
         books = self.load_all_books()
 
-        # Check if there are no books
         if not books:
             message_label = QLabel(
                 "No books found. Click the button below to add a new book."
             )
             self.main_layout.addWidget(message_label)
         else:
-            # Create a table to display the books
-            table = QTableWidget(
-                len(books), 6
-            )  # Assuming 6 columns for ISBN, title, author, year, price, actions
+            table = QTableWidget(len(books), 6)
             table.setHorizontalHeaderLabels(
                 ["ISBN", "Title", "Author", "Year", "Price", "Actions"]
             )
@@ -87,7 +104,6 @@ class BookManagementSystem(QMainWindow):
                     item = QTableWidgetItem(str(value))
                     table.setItem(row, col, item)
 
-                # Add buttons for actions (Edit and Delete)
                 edit_button = QPushButton("Edit")
                 edit_button.clicked.connect(
                     lambda _, b=book: self.show_edit_book_page(b)
@@ -108,13 +124,11 @@ class BookManagementSystem(QMainWindow):
 
             self.main_layout.addWidget(table)
 
-        # Add "Add new book" button
         add_book_button = QPushButton("Add New Book")
         add_book_button.clicked.connect(self.show_add_book_page)
         self.main_layout.addWidget(add_book_button)
 
     def show_add_book_page(self):
-        # Clear existing widgets from the main layout
         self.clear_layout()
 
         add_book_label = QLabel("Add New Book:")
@@ -156,7 +170,6 @@ class BookManagementSystem(QMainWindow):
         self.main_layout.addWidget(widget)
 
     def show_edit_book_page(self, book):
-        # Clear existing widgets from the main layout
         self.clear_layout()
 
         edit_book_label = QLabel("Edit Book:")
@@ -204,7 +217,6 @@ class BookManagementSystem(QMainWindow):
         year = self.year_input.text()
         price = self.price_input.text()
 
-        # Implement validation
         if not isbn or not title or not author or not year or not price:
             self.show_error_dialog("All fields must be filled.")
             return
@@ -216,18 +228,14 @@ class BookManagementSystem(QMainWindow):
             self.show_error_dialog("Year and price must be valid numbers.")
             return
 
-        # Implement unique ISBN validation
         if self.is_isbn_duplicate(isbn):
             self.show_error_dialog("ISBN must be unique.")
             return
 
-        # Insert the new book into the database
         self.insert_book(isbn, title, author, year, price)
 
-        # Show success dialog
         self.show_success_dialog("Book added successfully.")
 
-        # Return to the main page
         self.show_main_page()
 
     def edit_book(self, isbn):
@@ -236,7 +244,6 @@ class BookManagementSystem(QMainWindow):
         year = self.year_input.text()
         price = self.price_input.text()
 
-        # Implement validation
         if not title or not author or not year or not price:
             self.show_error_dialog("All fields must be filled.")
             return
@@ -248,13 +255,10 @@ class BookManagementSystem(QMainWindow):
             self.show_error_dialog("Year and price must be valid numbers.")
             return
 
-        # Update the book in the database
         self.update_book(isbn, title, author, year, price)
 
-        # Show success dialog
         self.show_success_dialog("Book updated successfully.")
 
-        # Return to the main page
         self.show_main_page()
 
     def confirm_delete_book(self, book):
@@ -267,13 +271,10 @@ class BookManagementSystem(QMainWindow):
         )
 
         if confirmation == QMessageBox.Yes:
-            # Delete the book from the database
             self.delete_book(book[0])
 
-            # Show success dialog
             self.show_success_dialog("Book deleted successfully.")
 
-            # Return to the main page
             self.show_main_page()
 
     def delete_book(self, isbn):
