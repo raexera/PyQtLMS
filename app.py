@@ -17,20 +17,40 @@ from PyQt5.QtWidgets import (
 )
 import mysql.connector
 
-DB_HOST = "localhost"
-DB_USER = "root"
-DB_PASSWORD = "root"
-DB_NAME = "BMS"
 
-db_connection = mysql.connector.connect(
-    host=DB_HOST, user=DB_USER, passwd=DB_PASSWORD, database=DB_NAME
-)
-cursor = db_connection.cursor()
+class DatabaseHandler:
+    def __init__(self, host, user, password, database):
+        self.connection = mysql.connector.connect(
+            host=host, user=user, passwd=password, database=database
+        )
+        self.cursor = self.connection.cursor()
+
+    def execute_query(self, query, params=None):
+        try:
+            if params:
+                self.cursor.execute(query, params)
+            else:
+                self.cursor.execute(query)
+            self.connection.commit()
+        except mysql.connector.Error as err:
+            self.show_error_dialog(f"Database Error: {err}")
+
+    def fetch_data(self, query, params=None):
+        try:
+            if params:
+                self.cursor.execute(query, params)
+            else:
+                self.cursor.execute(query)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.show_error_dialog(f"Database Error: {err}")
+            return []
 
 
 class BookManagementSystem(QMainWindow):
-    def __init__(self):
+    def __init__(self, db_handler):
         super().__init__()
+        self.db_handler = db_handler
         self.init()
 
     def init(self):
@@ -322,59 +342,30 @@ class BookManagementSystem(QMainWindow):
 
             self.show_main_page()
 
-    def delete_book(self, isbn):
-        try:
-            query = "DELETE FROM book WHERE ISBN = %s"
-            cursor.execute(query, (isbn,))
-            db_connection.commit()
-        except mysql.connector.Error as err:
-            self.show_error_dialog(f"Error deleting book: {err}")
-
     def load_all_books(self):
-        try:
-            query = "SELECT * FROM book"
-            cursor.execute(query)
-            books = cursor.fetchall()
-            return books
-        except mysql.connector.Error as err:
-            self.show_error_dialog(f"Error loading books: {err}")
-            return []
+        query = "SELECT * FROM book"
+        return self.db_handler.fetch_data(query)
 
     def is_isbn_duplicate(self, isbn):
-        try:
-            query = "SELECT COUNT(*) FROM book WHERE ISBN = %s"
-            cursor.execute(query, (isbn,))
-            count = cursor.fetchone()[0]
-            return count > 0
-        except mysql.connector.Error as err:
-            self.show_error_dialog(f"Error checking duplicate ISBN: {err}")
-            return False
+        query = "SELECT COUNT(*) FROM book WHERE ISBN = %s"
+        count = self.db_handler.fetch_data(query, (isbn,))[0][0]
+        return count > 0
 
     def insert_book(self, isbn, title, author, year, price):
-        try:
-            query = "INSERT INTO book (ISBN, title, author, year_published, price) VALUES (%s, %s, %s, %s, %s)"
-            cursor.execute(query, (isbn, title, author, year, price))
-            db_connection.commit()
-        except mysql.connector.Error as err:
-            self.show_error_dialog(f"Error inserting book: {err}")
+        query = "INSERT INTO book (ISBN, title, author, year_published, price) VALUES (%s, %s, %s, %s, %s)"
+        self.db_handler.execute_query(query, (isbn, title, author, year, price))
 
     def update_book(self, isbn, title, author, year, price):
-        try:
-            query = "UPDATE book SET title = %s, author = %s, year_published = %s, price = %s WHERE ISBN = %s"
-            cursor.execute(query, (title, author, year, price, isbn))
-            db_connection.commit()
-        except mysql.connector.Error as err:
-            self.show_error_dialog(f"Error updating book: {err}")
+        query = "UPDATE book SET title = %s, author = %s, year_published = %s, price = %s WHERE ISBN = %s"
+        self.db_handler.execute_query(query, (title, author, year, price, isbn))
+
+    def delete_book(self, isbn):
+        query = "DELETE FROM book WHERE ISBN = %s"
+        self.db_handler.execute_query(query, (isbn,))
 
     def load_book_by_isbn(self, isbn):
-        try:
-            query = "SELECT * FROM book WHERE ISBN = %s"
-            cursor.execute(query, (isbn,))
-            book = cursor.fetchone()
-            return book
-        except mysql.connector.Error as err:
-            self.show_error_dialog(f"Error loading book by ISBN: {err}")
-            return None
+        query = "SELECT * FROM book WHERE ISBN = %s"
+        return self.db_handler.fetch_data(query, (isbn,))[0]
 
     def show_success_dialog(self, message):
         QMessageBox.information(self, "Success", message, QMessageBox.Ok)
@@ -388,7 +379,8 @@ class BookManagementSystem(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    main_window = BookManagementSystem()
+    db_handler = DatabaseHandler("localhost", "root", "root", "BMS")
+    main_window = BookManagementSystem(db_handler)
     main_window.show()
     sys.exit(app.exec_())
 
