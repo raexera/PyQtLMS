@@ -52,11 +52,13 @@ class BookManagementSystem(QMainWindow):
             }
             QLineEdit {
                 padding: 6px;
-                border: 1px solid #ced4da;
+                border: none;
                 border-radius: 4px;
+                background-color: #363a4f;
+                color: #cad3f5;
             }
             QTableWidget {
-                border: 1px solid #dee2e6;
+                border: 1px solid #cad3f5;
                 border-radius: 4px;
                 margin-top: 10px;
             }
