@@ -7,7 +7,7 @@ from src.ui import BookManagementSystem
 
 def main():
     app = QApplication(sys.argv)
-    db_handler = DatabaseHandler("localhost", "root", "root", "LMS")
+    db_handler = DatabaseHandler("localhost", "root", "root", "PyQtLMS")
     main_window = BookManagementSystem(db_handler)
     main_window.show()
     sys.exit(app.exec_())
