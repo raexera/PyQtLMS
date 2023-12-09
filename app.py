@@ -111,21 +111,13 @@ class BookManagementSystem(QMainWindow):
 
     def clear_layout(self):
         for i in reversed(range(self.main_layout.count())):
-            widget = self.main_layout.itemAt(i).widget()
-            if widget:
+            if widget := self.main_layout.itemAt(i).widget():
                 widget.setParent(None)
 
     def show_main_page(self):
         self.clear_layout()
 
-        books = self.load_all_books()
-
-        if not books:
-            message_label = QLabel(
-                "No books found. Click the button below to add a new book."
-            )
-            self.main_layout.addWidget(message_label)
-        else:
+        if books := self.load_all_books():
             table = QTableWidget(len(books), 6)
             table.setHorizontalHeaderLabels(
                 ["ISBN", "Title", "Author", "Year", "Price", "Actions"]
@@ -175,6 +167,11 @@ class BookManagementSystem(QMainWindow):
             vertical_header = table.verticalHeader()
             vertical_header.setDefaultSectionSize(50)
 
+        else:
+            message_label = QLabel(
+                "No books found. Click the button below to add a new book."
+            )
+            self.main_layout.addWidget(message_label)
         add_book_button = QPushButton("Add New Book")
         add_book_button.clicked.connect(self.show_add_book_page)
         self.main_layout.addWidget(add_book_button)
@@ -234,7 +231,7 @@ class BookManagementSystem(QMainWindow):
     def show_edit_book_page(self, book):
         self.clear_layout()
 
-        edit_book_label = QLabel("Edit Book:")
+        edit_book_label = QLabel("Edit Book")
         edit_book_label.setStyleSheet("font-size: 24px; color: #8aadf4;")
         edit_book_label.setAlignment(Qt.AlignCenter)
 
