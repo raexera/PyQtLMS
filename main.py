@@ -2,7 +2,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication
 from src.database import DatabaseHandler
-from src.ui import BookManagementSystem
+from src.app import BookManagementSystem
 
 
 def main():
