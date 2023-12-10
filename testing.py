@@ -189,7 +189,7 @@ class BookManagementSystem(QMainWindow):
         self.banner_label.setStyleSheet("font-size: 32px; color: #4a90e2;")
 
         self.start_button = QPushButton("Start")
-        self.start_button.clicked.connect(self.setup_database)
+        self.start_button.clicked.connect(self.setup_database_connection)
         self.main_layout.addWidget(self.banner_label)
         self.main_layout.addWidget(self.start_button)
 
@@ -510,7 +510,7 @@ class BookManagementSystem(QMainWindow):
     def show_info_dialog(self, message):
         QMessageBox.information(self, "Information", message, QMessageBox.Ok)
 
-    def setup_database(self):
+    def setup_database_connection(self):
         while True:
             config_path = self.get_config_path()
             db_setup_dialog = DbSetupDialog(config_path)
