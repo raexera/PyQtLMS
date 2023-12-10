@@ -20,11 +20,26 @@ class BookManagementSystem(QMainWindow):
     def __init__(self, db_handler):
         super().__init__()
         self.db_handler = db_handler
-        self.init()
+        self.setup_base_window()
 
-    def init(self):
+    def setup_base_window(self):
         self.setWindowTitle("Library Management System")
         self.setGeometry(100, 100, 800, 600)
+
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        self.main_layout = QVBoxLayout(self.central_widget)
+
+        self.banner_label = QLabel("Library Management System")
+        self.banner_label.setAlignment(Qt.AlignCenter)
+        self.banner_label.setStyleSheet("font-size: 32px; color: #8aadf4;")
+
+        self.start_button = QPushButton("Start")
+        self.start_button.clicked.connect(self.show_main_page)
+        self.main_layout.addWidget(self.banner_label)
+        self.main_layout.addWidget(self.start_button)
+
+        self.statusBar().showMessage("Welcome to Library Management System")
 
         self.setStyleSheet(
             """
@@ -36,7 +51,7 @@ class BookManagementSystem(QMainWindow):
             QMainWindow {
                 background-color: #24273a;
             }
-            
+
             QPushButton {
                 background-color: #8aadf4;
                 color: #24273a;
@@ -63,24 +78,38 @@ class BookManagementSystem(QMainWindow):
         """
         )
 
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
-
-        self.main_layout = QVBoxLayout(self.central_widget)
-
-        self.banner_label = QLabel("Library Management System")
-        self.banner_label.setAlignment(Qt.AlignCenter)
-        self.banner_label.setStyleSheet("font-size: 32px; color: #8aadf4;")
-
-        self.start_button = QPushButton("Start")
-        self.start_button.clicked.connect(self.show_main_page)
-        self.main_layout.addWidget(self.banner_label)
-        self.main_layout.addWidget(self.start_button)
-
     def clear_layout(self):
         for i in reversed(range(self.main_layout.count())):
             if widget := self.main_layout.itemAt(i).widget():
                 widget.setParent(None)
+
+    def create_button(self, text, clicked_handler):
+        button = QPushButton(text)
+        button.setMinimumSize(40, 20)
+        button.setStyleSheet("padding: 4px 8px; color: #000;")
+        button.clicked.connect(clicked_handler)
+        return button
+
+    def create_widget(self, layout):
+        widget = QWidget()
+        widget.setLayout(layout)
+        return widget
+
+    def create_line_edit(self, text, placeholder=True):
+        line_edit = QLineEdit()
+        if placeholder:
+            line_edit.setPlaceholderText(text)
+        else:
+            line_edit.setText(text)
+
+        return line_edit
+
+    def create_scroll_area(self, widget):
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        scroll_area.setWidget(widget)
+        return scroll_area
 
     def show_main_page(self):
         self.clear_layout()
@@ -96,36 +125,22 @@ class BookManagementSystem(QMainWindow):
                     item = QTableWidgetItem(str(value))
                     table.setItem(row, col, item)
 
-                edit_button = QPushButton("Edit")
-                edit_button.setMinimumSize(40, 20)
-                edit_button.setStyleSheet("padding: 4px 8px; color: #000;")
-                edit_button.clicked.connect(
-                    lambda _, b=book: self.show_edit_book_page(b)
+                edit_button = self.create_button(
+                    "Edit", lambda _, b=book: self.show_edit_book_page(b)
                 )
-
-                delete_button = QPushButton("Delete")
-                delete_button.setMinimumSize(40, 20)
-                delete_button.setStyleSheet("padding: 4px 8px; color: #000;")
-                delete_button.clicked.connect(
-                    lambda _, b=book: self.confirm_delete_book(b)
+                delete_button = self.create_button(
+                    "Delete", lambda _, b=book: self.confirm_delete_book(b)
                 )
 
                 layout = QHBoxLayout()
                 layout.addWidget(edit_button)
                 layout.addWidget(delete_button)
 
-                widget = QWidget()
-                widget.setLayout(layout)
+                widget = self.create_widget(layout)
 
                 table.setCellWidget(row, 5, widget)
 
-            # Use QScrollArea to contain the table
-            scroll_area = QScrollArea()
-            scroll_area.setWidgetResizable(True)
-
-            table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-            scroll_area.setWidget(table)
+            scroll_area = self.create_scroll_area(table)
 
             self.main_layout.addWidget(scroll_area, 1)
 
@@ -139,6 +154,8 @@ class BookManagementSystem(QMainWindow):
             message_label = QLabel(
                 "No books found. Click the button below to add a new book."
             )
+            message_label.setAlignment(Qt.AlignCenter)
+            message_label.setStyleSheet("font-size: 24px; color: #8aadf4;")
             self.main_layout.addWidget(message_label)
         add_book_button = QPushButton("Add New Book")
         add_book_button.clicked.connect(self.show_add_book_page)
@@ -151,20 +168,11 @@ class BookManagementSystem(QMainWindow):
         add_book_label.setStyleSheet("font-size: 24px; color: #8aadf4;")
         add_book_label.setAlignment(Qt.AlignCenter)
 
-        self.isbn_input = QLineEdit()
-        self.isbn_input.setPlaceholderText("ISBN")
-
-        self.title_input = QLineEdit()
-        self.title_input.setPlaceholderText("Title")
-
-        self.author_input = QLineEdit()
-        self.author_input.setPlaceholderText("Author")
-
-        self.year_input = QLineEdit()
-        self.year_input.setPlaceholderText("Year Published")
-
-        self.price_input = QLineEdit()
-        self.price_input.setPlaceholderText("Price")
+        self.isbn_input = self.create_line_edit("ISBN")
+        self.title_input = self.create_line_edit("Title")
+        self.author_input = self.create_line_edit("Author")
+        self.year_input = self.create_line_edit("Year Published")
+        self.price_input = self.create_line_edit("Price")
 
         submit_button = QPushButton("Submit")
         submit_button.clicked.connect(self.add_book)
@@ -186,14 +194,9 @@ class BookManagementSystem(QMainWindow):
         layout.addWidget(self.title_input)
         layout.addWidget(self.author_input)
         layout.addLayout(year_price_layout)
-        layout.addWidget(self.year_input)
-        layout.addWidget(self.price_input)
         layout.addLayout(back_submit_layout)
-        layout.addWidget(submit_button)
-        layout.addWidget(back_button)
 
-        widget = QWidget()
-        widget.setLayout(layout)
+        widget = self.create_widget(layout)
         self.main_layout.addWidget(widget)
 
     def show_edit_book_page(self, book):
@@ -203,20 +206,12 @@ class BookManagementSystem(QMainWindow):
         edit_book_label.setStyleSheet("font-size: 24px; color: #8aadf4;")
         edit_book_label.setAlignment(Qt.AlignCenter)
 
-        self.isbn_input = QLineEdit(book[0])
+        self.isbn_input = self.create_line_edit(book[0], placeholder=False)
         self.isbn_input.setReadOnly(True)
-
-        self.title_input = QLineEdit()
-        self.title_input.setText(book[1])
-
-        self.author_input = QLineEdit()
-        self.author_input.setText(book[2])
-
-        self.year_input = QLineEdit()
-        self.year_input.setText(str(book[3]))
-
-        self.price_input = QLineEdit()
-        self.price_input.setText(str(book[4]))
+        self.title_input = self.create_line_edit(book[1], placeholder=False)
+        self.author_input = self.create_line_edit(book[2], placeholder=False)
+        self.year_input = self.create_line_edit(str(book[3]), placeholder=False)
+        self.price_input = self.create_line_edit(str(book[4]), placeholder=False)
 
         submit_button = QPushButton("Submit")
         submit_button.clicked.connect(lambda: self.edit_book(book[0]))
@@ -238,14 +233,9 @@ class BookManagementSystem(QMainWindow):
         layout.addWidget(self.title_input)
         layout.addWidget(self.author_input)
         layout.addLayout(year_price_layout)
-        layout.addWidget(self.year_input)
-        layout.addWidget(self.price_input)
         layout.addLayout(back_submit_layout)
-        layout.addWidget(submit_button)
-        layout.addWidget(back_button)
 
-        widget = QWidget()
-        widget.setLayout(layout)
+        widget = self.create_widget(layout)
         self.main_layout.addWidget(widget)
 
     def add_book(self):
@@ -284,7 +274,6 @@ class BookManagementSystem(QMainWindow):
         year = self.year_input.text()
         price = self.price_input.text()
 
-        # Check if any changes were made
         current_values = self.load_book_by_isbn(isbn)
         if (
             title == current_values[1]
