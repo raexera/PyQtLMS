@@ -171,7 +171,7 @@ class DbSetupDialog(QDialog):
 
 
 class BookManagementSystem(QMainWindow):
-    def __init__(self, db_handler):
+    def __init__(self, db_handler=None):
         super().__init__()
         self.db_handler = db_handler
         self.setup_base_window()
@@ -570,8 +570,7 @@ class BookManagementSystem(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    db_handler = DatabaseHandler("localhost", "root", "root", "PyQtLMS")
-    main_window = BookManagementSystem(db_handler)
+    main_window = BookManagementSystem()
     main_window.show()
     sys.exit(app.exec_())
 
