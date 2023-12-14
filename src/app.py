@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
 )
 from PyQt5.QtCore import Qt
-from .db_connection_handler import DbConnectionHandler
+from .components import DbConnectionHandler
 
 
 class BookManagementSystem(QMainWindow):

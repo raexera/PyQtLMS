@@ -1,18 +1,7 @@
-from sqlalchemy import create_engine, Column, String, Integer, Text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
-
-Base = declarative_base()
-
-
-class Book(Base):
-    __tablename__ = "book"
-    ISBN = Column(String(20), primary_key=True)
-    title = Column(Text, nullable=False)
-    author = Column(String(100), nullable=False)
-    year_published = Column(Integer, nullable=False)
-    price = Column(Integer, nullable=False)
+from .models import Base, Book
 
 
 class DatabaseHandler:

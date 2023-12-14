@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication
-from src.book_management_system import BookManagementSystem
+from src.app import BookManagementSystem
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
