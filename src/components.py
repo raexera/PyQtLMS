@@ -68,7 +68,7 @@ class DbSetupDialog(QDialog):
 
     def setup_layout(self):
         self.setWindowTitle("Database Connection Setup")
-        self.setGeometry(100, 100, 400, 200)
+        self.resize(400, 200)
         layout = QFormLayout()
 
         self.username_input = QLineEdit()
@@ -91,7 +91,7 @@ class DbSetupDialog(QDialog):
             * {
                 background-color: #2e2e2e;
                 color: #ffffff;
-                font-size: 16px;
+                font-size: 16pt;
             }
             QDialog {
                 border: 1px solid #555555;

@@ -25,7 +25,7 @@ class BookManagementSystem(QMainWindow):
 
     def setup_base_window(self):
         self.setWindowTitle("Library Management System")
-        self.setGeometry(100, 100, 800, 600)
+        self.resize(900, 600)
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -33,7 +33,7 @@ class BookManagementSystem(QMainWindow):
 
         self.banner_label = QLabel("Library Management System")
         self.banner_label.setAlignment(Qt.AlignCenter)
-        self.banner_label.setStyleSheet("font-size: 32px; color: #4a90e2;")
+        self.banner_label.setStyleSheet("font-size: 32pt; color: #4a90e2;")
 
         self.start_button = QPushButton("Start")
         self.start_button.clicked.connect(self.setup_database_connection)
@@ -45,7 +45,7 @@ class BookManagementSystem(QMainWindow):
             *{
                 background-color: #2e2e2e;
                 color: #ffffff;
-                font-size: 16px;
+                font-size: 16pt;
             }
             QDialog {
                 border: 1px solid #555555;
@@ -78,7 +78,7 @@ class BookManagementSystem(QMainWindow):
             'Created with <span style="color: #4a90e2;">❤️</span> by <span style="color: #4a90e2;">@rxyhn</span>'
         )
         status_message.setStyleSheet(
-            "color: #ffffff; font-size: 14px; padding: 8px; border-top: 1px solid #555555;"
+            "color: #ffffff; font-size: 14pt; padding: 8px; border-top: 1px solid #555555;"
         )
 
         self.statusBar().addWidget(status_message, 1)
@@ -161,7 +161,7 @@ class BookManagementSystem(QMainWindow):
                 "No books found. Click the button below to add a new book."
             )
             message_label.setAlignment(Qt.AlignCenter)
-            message_label.setStyleSheet("font-size: 24px; color: #4a90e2;")
+            message_label.setStyleSheet("font-size: 24pt; color: #4a90e2;")
             self.main_layout.addWidget(message_label)
         add_book_button = QPushButton("Add New Book")
         add_book_button.clicked.connect(self.show_add_book_page)
@@ -171,7 +171,7 @@ class BookManagementSystem(QMainWindow):
         self.clear_layout()
 
         add_book_label = QLabel("Add New Book")
-        add_book_label.setStyleSheet("font-size: 24px; color: #4a90e2;")
+        add_book_label.setStyleSheet("font-size: 24pt; color: #4a90e2;")
         add_book_label.setAlignment(Qt.AlignCenter)
 
         self.isbn_input = self.create_line_edit("ISBN")
@@ -209,7 +209,7 @@ class BookManagementSystem(QMainWindow):
         self.clear_layout()
 
         edit_book_label = QLabel("Edit Book")
-        edit_book_label.setStyleSheet("font-size: 24px; color: #4a90e2;")
+        edit_book_label.setStyleSheet("font-size: 24pt; color: #4a90e2;")
         edit_book_label.setAlignment(Qt.AlignCenter)
 
         self.isbn_input = self.create_line_edit(book.ISBN, placeholder=False)
