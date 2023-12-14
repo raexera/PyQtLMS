@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import (
+    QApplication,
     QMainWindow,
     QWidget,
     QVBoxLayout,
@@ -13,7 +14,7 @@ from PyQt5.QtWidgets import (
     QHeaderView,
     QHBoxLayout,
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 from .components import DbConnectionHandler
 
 
@@ -25,7 +26,7 @@ class BookManagementSystem(QMainWindow):
 
     def setup_base_window(self):
         self.setWindowTitle("Library Management System")
-        self.resize(900, 600)
+        self.setMinimumSize(QSize(900, 600))
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -56,8 +57,13 @@ class BookManagementSystem(QMainWindow):
                 border-radius: 4px;
                 background-color: #424242;
             }
-            QTableWidget {
-                border: none;
+            QTableWidget,
+            QTableWidget::item {
+                border: 1px solid #555555;
+            }
+            QHeaderView::section {
+                background-color: #2e2e2e;
+                color: #ffffff;
             }
             QPushButton {
                 background-color: #4a90e2;
@@ -72,15 +78,13 @@ class BookManagementSystem(QMainWindow):
         """
         )
 
-        status_message = QLabel()
-        status_message.setAlignment(Qt.AlignCenter)
-        status_message.setText(
+        status_message = QLabel(
             'Created with <span style="color: #4a90e2;">❤️</span> by <span style="color: #4a90e2;">@rxyhn</span>'
         )
+        status_message.setAlignment(Qt.AlignCenter)
         status_message.setStyleSheet(
             "color: #ffffff; font-size: 14pt; padding: 8px; border-top: 1px solid #555555;"
         )
-
         self.statusBar().addWidget(status_message, 1)
 
     def clear_layout(self):
@@ -115,6 +119,16 @@ class BookManagementSystem(QMainWindow):
         widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         scroll_area.setWidget(widget)
         return scroll_area
+
+    def resizeEvent(self, event):
+        self.adjustFontSizes()
+        super().resizeEvent(event)
+
+    def adjustFontSizes(self):
+        base_font_size = max(8, self.width() // 100)
+        font = QApplication.font()
+        font.setPointSize(base_font_size)
+        QApplication.setFont(font)
 
     def show_main_page(self):
         self.clear_layout()

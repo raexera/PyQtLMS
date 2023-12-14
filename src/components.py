@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
     QFormLayout,
     QMessageBox,
 )
+from PyQt5.QtCore import QSize
 from .database import DatabaseHandler
 
 
@@ -68,7 +69,7 @@ class DbSetupDialog(QDialog):
 
     def setup_layout(self):
         self.setWindowTitle("Database Connection Setup")
-        self.resize(400, 200)
+        self.setMinimumSize(QSize(400, 200))
         layout = QFormLayout()
 
         self.username_input = QLineEdit()
