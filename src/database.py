@@ -1,7 +1,11 @@
+import random
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from .models import Base, Book
+from faker import Faker
+
+fake = Faker()
 
 
 class DatabaseHandler:
@@ -45,3 +49,14 @@ class DatabaseHandler:
 
     def is_isbn_duplicate(self, isbn):
         return self.session.query(Book).filter(Book.ISBN == isbn).count() > 0
+
+    def generate_fake_data(self, count):
+        for _ in range(count):
+            isbn = fake.isbn13()
+            title = fake.sentence(
+                nb_words=6, variable_nb_words=True, ext_word_list=None
+            )
+            author = fake.name()
+            year = random.randint(1900, 2024)
+            price = random.randint(1, 1000000)
+            self.insert_book(isbn, title, author, year, price)

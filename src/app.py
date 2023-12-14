@@ -36,7 +36,7 @@ class BookManagementSystem(QMainWindow):
         self.banner_label.setAlignment(Qt.AlignCenter)
         self.banner_label.setStyleSheet("font-size: 32pt; color: #4a90e2;")
 
-        self.start_button = QPushButton("Start")
+        self.start_button = QPushButton("S T A R T")
         self.start_button.clicked.connect(self.setup_database_connection)
         self.main_layout.addWidget(self.banner_label)
         self.main_layout.addWidget(self.start_button)
@@ -144,7 +144,7 @@ class BookManagementSystem(QMainWindow):
                 table.setItem(row, 1, QTableWidgetItem(book.title))
                 table.setItem(row, 2, QTableWidgetItem(book.author))
                 table.setItem(row, 3, QTableWidgetItem(str(book.year_published)))
-                table.setItem(row, 4, QTableWidgetItem(str(book.price)))
+                table.setItem(row, 4, QTableWidgetItem(self.format_idr(book.price)))
 
                 edit_button = self.create_button(
                     "Edit", lambda _, b=book: self.show_edit_book_page(b)
@@ -177,9 +177,14 @@ class BookManagementSystem(QMainWindow):
             message_label.setAlignment(Qt.AlignCenter)
             message_label.setStyleSheet("font-size: 24pt; color: #4a90e2;")
             self.main_layout.addWidget(message_label)
+
         add_book_button = QPushButton("Add New Book")
         add_book_button.clicked.connect(self.show_add_book_page)
+
+        add_random_book_button = QPushButton("Add Random Book")
+        add_random_book_button.clicked.connect(self.add_random_book)
         self.main_layout.addWidget(add_book_button)
+        self.main_layout.addWidget(add_random_book_button)
 
     def show_add_book_page(self):
         self.clear_layout()
@@ -276,8 +281,8 @@ class BookManagementSystem(QMainWindow):
             price = int(price)
             if year < 1900 or year > 2024:
                 raise ValueError("Year must be between 1900 and 2024.")
-            if price <= 0:
-                raise ValueError("Price must be greater than 0.")
+            if price <= 0 or price > 1000000:
+                raise ValueError("Price must be greater than 0 and less than 1000.")
         except ValueError as e:
             self.show_error_dialog(str(e))
             return
@@ -287,6 +292,11 @@ class BookManagementSystem(QMainWindow):
             return
 
         self.db_handler.insert_book(isbn, title, author, year, price)
+        self.show_success_dialog("Book added successfully.")
+        self.show_main_page()
+
+    def add_random_book(self):
+        self.db_handler.generate_fake_data(1)
         self.show_success_dialog("Book added successfully.")
         self.show_main_page()
 
@@ -350,6 +360,13 @@ class BookManagementSystem(QMainWindow):
 
     def show_info_dialog(self, message):
         QMessageBox.information(self, "Information", message, QMessageBox.Ok)
+
+    def format_idr(self, value):
+        try:
+            num_value = float(value)
+            return "Rp {:,.0f}".format(num_value).replace(",", ".")
+        except ValueError:
+            return "Invalid Value"
 
     def setup_database_connection(self):
         if self.db_connection_handler.setup_database_connection(self):
