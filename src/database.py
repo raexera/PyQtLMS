@@ -31,8 +31,7 @@ class DatabaseHandler:
         return self.session.query(Book).filter(Book.ISBN == isbn).first()
 
     def update_book(self, isbn, title, author, year, price):
-        book = self.session.query(Book).filter(Book.ISBN == isbn).first()
-        if book:
+        if book := self.session.query(Book).filter(Book.ISBN == isbn).first():
             book.title = title
             book.author = author
             book.year_published = year
@@ -40,8 +39,7 @@ class DatabaseHandler:
             self.session.commit()
 
     def delete_book(self, isbn):
-        book = self.session.query(Book).filter(Book.ISBN == isbn).first()
-        if book:
+        if book := self.session.query(Book).filter(Book.ISBN == isbn).first():
             self.session.delete(book)
             self.session.commit()
 

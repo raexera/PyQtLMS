@@ -278,8 +278,7 @@ class BookManagementSystem(QMainWindow):
         year = self.year_input.text()
         price = self.price_input.text()
 
-        current_book = self.db_handler.load_book_by_isbn(isbn)
-        if current_book:
+        if current_book := self.db_handler.load_book_by_isbn(isbn):
             if (
                 title == current_book.title
                 and author == current_book.author
