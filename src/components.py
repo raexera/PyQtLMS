@@ -68,6 +68,7 @@ class DbSetupDialog(QDialog):
 
     def setup_layout(self):
         self.setWindowTitle("Database Connection Setup")
+        self.setGeometry(100, 100, 400, 200)
         layout = QFormLayout()
 
         self.username_input = QLineEdit()
@@ -78,7 +79,7 @@ class DbSetupDialog(QDialog):
         layout.addRow("Password:", self.password_input)
         layout.addRow("Host:", self.host_input)
 
-        save_button = QPushButton("Save")
+        save_button = QPushButton("OK")
         save_button.clicked.connect(self.save_config)
 
         layout.addRow(save_button)
@@ -90,24 +91,20 @@ class DbSetupDialog(QDialog):
             * {
                 background-color: #2e2e2e;
                 color: #ffffff;
-                font-size: 14px;
+                font-size: 16px;
             }
-
             QDialog {
                 border: 1px solid #555555;
             }
-
             QLineEdit {
                 padding: 6px;
                 border: 1px solid #555555;
                 border-radius: 4px;
                 background-color: #424242;
-                color: #ffffff;
             }
-
             QPushButton {
                 background-color: #4a90e2;
-                color: #ffffff;
+                color: #2e2e2e;
                 padding: 8px 16px;
                 border: none;
                 border-radius: 4px;

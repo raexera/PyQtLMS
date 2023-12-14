@@ -40,19 +40,25 @@ class BookManagementSystem(QMainWindow):
         self.main_layout.addWidget(self.banner_label)
         self.main_layout.addWidget(self.start_button)
 
-        self.statusBar().showMessage("Created with ❤️ by @rxyhn")
-
         self.setStyleSheet(
             """
             *{
                 background-color: #2e2e2e;
                 color: #ffffff;
-                font-size: 14px;
+                font-size: 16px;
             }
-            QMainWindow {
-                background-color: #2e2e2e;
+            QDialog {
+                border: 1px solid #555555;
             }
-
+            QLineEdit {
+                padding: 6px;
+                border: 1px solid #555555;
+                border-radius: 4px;
+                background-color: #424242;
+            }
+            QTableWidget {
+                border: none;
+            }
             QPushButton {
                 background-color: #4a90e2;
                 color: #2e2e2e;
@@ -63,21 +69,19 @@ class BookManagementSystem(QMainWindow):
             QPushButton:hover {
                 background-color: #357ae8;
             }
-            QLineEdit {
-                padding: 6px;
-                border: 1px solid #555555;
-                border-radius: 4px;
-                background-color: #424242;
-                color: #ffffff;
-            }
-            QTableWidget {
-                border: none;
-            }
-            QLabel {
-                color: #ffffff;
-            }
         """
         )
+
+        status_message = QLabel()
+        status_message.setAlignment(Qt.AlignCenter)
+        status_message.setText(
+            'Created with <span style="color: #4a90e2;">❤️</span> by <span style="color: #4a90e2;">@rxyhn</span>'
+        )
+        status_message.setStyleSheet(
+            "color: #ffffff; font-size: 14px; padding: 8px; border-top: 1px solid #555555;"
+        )
+
+        self.statusBar().addWidget(status_message, 1)
 
     def clear_layout(self):
         for i in reversed(range(self.main_layout.count())):
