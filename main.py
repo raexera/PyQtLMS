@@ -1,17 +1,9 @@
-# main.py
 import sys
 from PyQt5.QtWidgets import QApplication
-from src.database import DatabaseHandler
-from src.app import BookManagementSystem
-
-
-def main():
-    app = QApplication(sys.argv)
-    db_handler = DatabaseHandler("localhost", "root", "root", "PyQtLMS")
-    main_window = BookManagementSystem(db_handler)
-    main_window.show()
-    sys.exit(app.exec_())
-
+from src.book_management_system import BookManagementSystem
 
 if __name__ == "__main__":
-    main()
+    app = QApplication(sys.argv)
+    main_window = BookManagementSystem()
+    main_window.show()
+    sys.exit(app.exec_())

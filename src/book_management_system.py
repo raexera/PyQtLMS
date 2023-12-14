@@ -1,13 +1,7 @@
-import os
-import sys
-import configparser
-import mysql.connector
 from PyQt5.QtWidgets import (
-    QApplication,
     QMainWindow,
     QWidget,
     QVBoxLayout,
-    QHBoxLayout,
     QPushButton,
     QLabel,
     QTableWidget,
@@ -17,163 +11,16 @@ from PyQt5.QtWidgets import (
     QScrollArea,
     QSizePolicy,
     QHeaderView,
-    QDialog,
-    QFormLayout,
+    QHBoxLayout,
 )
 from PyQt5.QtCore import Qt
-
-
-class DatabaseHandler:
-    def __init__(self, host, user, password, database):
-        try:
-            self.connection = mysql.connector.connect(
-                host=host, user=user, passwd=password
-            )
-            if not self.connection.is_connected():
-                raise mysql.connector.Error("Unable to connect to database.")
-
-            self.cursor = self.connection.cursor()
-
-            self.cursor.execute(f"SHOW DATABASES LIKE '{database}'")
-            if not self.cursor.fetchone():
-                self.cursor.execute(f"CREATE DATABASE {database}")
-
-            self.cursor.execute(f"USE {database}")
-
-            self.cursor.execute("SHOW TABLES LIKE 'book'")
-            if not self.cursor.fetchone():
-                self.cursor.execute(
-                    """
-                        CREATE TABLE book (
-                            ISBN VARCHAR(20) PRIMARY KEY,
-                            title TEXT NOT NULL,
-                            author VARCHAR(100) NOT NULL,
-                            year_published INT NOT NULL,
-                            price INT NOT NULL
-                        )
-                        """
-                )
-                self.connection.commit()
-        except mysql.connector.Error as err:
-            self.handle_db_error(err)
-            raise
-
-    def handle_db_error(self, err):
-        print(f"Database Error: {err}")
-
-    def execute_query(self, query, params=None):
-        try:
-            if params:
-                self.cursor.execute(query, params)
-            else:
-                self.cursor.execute(query)
-            self.connection.commit()
-        except mysql.connector.Error as err:
-            self.handle_db_error(err)
-
-    def fetch_data(self, query, params=None):
-        try:
-            if params:
-                self.cursor.execute(query, params)
-            else:
-                self.cursor.execute(query)
-            return self.cursor.fetchall()
-        except mysql.connector.Error as err:
-            self.handle_db_error(err)
-            return []
-
-
-class DbSetupDialog(QDialog):
-    def __init__(self, config_path):
-        super().__init__()
-
-        self.config_path = config_path
-
-        self.setup_layout()
-        self.load_config()
-
-    def setup_layout(self):
-        self.setWindowTitle("Database Connection Setup")
-        layout = QFormLayout()
-
-        self.username_input = QLineEdit()
-        self.password_input = QLineEdit()
-        self.host_input = QLineEdit()
-
-        layout.addRow("Username:", self.username_input)
-        layout.addRow("Password:", self.password_input)
-        layout.addRow("Host:", self.host_input)
-
-        save_button = QPushButton("Save")
-        save_button.clicked.connect(self.save_config)
-
-        layout.addRow(save_button)
-
-        self.setLayout(layout)
-
-        self.setStyleSheet(
-            """
-            * {
-                background-color: #2e2e2e;
-                color: #ffffff;
-                font-size: 14px;
-            }
-
-            QDialog {
-                border: 1px solid #555555;
-            }
-
-            QLineEdit {
-                padding: 6px;
-                border: 1px solid #555555;
-                border-radius: 4px;
-                background-color: #424242;
-                color: #ffffff;
-            }
-
-            QPushButton {
-                background-color: #4a90e2;
-                color: #ffffff;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #357ae8;
-            }
-            """
-        )
-
-    def load_config(self):
-        config = configparser.ConfigParser()
-
-        if os.path.exists(self.config_path):
-            config.read(self.config_path)
-            self.username_input.setText(config.get("Database", "Username"))
-            self.password_input.setText(config.get("Database", "Password"))
-            self.host_input.setText(config.get("Database", "Host"))
-
-    def save_config(self):
-        config = configparser.ConfigParser()
-        config.add_section("Database")
-        config.set("Database", "Username", self.username_input.text())
-        config.set("Database", "Password", self.password_input.text())
-        config.set("Database", "Host", self.host_input.text())
-
-        config_dir = os.path.dirname(self.config_path)
-        if not os.path.exists(config_dir):
-            os.makedirs(config_dir)
-
-        with open(self.config_path, "w") as config_file:
-            config.write(config_file)
-
-        self.accept()
+from .db_connection_handler import DbConnectionHandler
 
 
 class BookManagementSystem(QMainWindow):
-    def __init__(self, db_handler=None):
+    def __init__(self):
         super().__init__()
-        self.db_handler = db_handler
+        self.db_connection_handler = DbConnectionHandler()
         self.setup_base_window()
 
     def setup_base_window(self):
@@ -268,7 +115,7 @@ class BookManagementSystem(QMainWindow):
     def show_main_page(self):
         self.clear_layout()
 
-        if books := self.load_all_books():
+        if books := self.db_handler.load_all_books():
             table = QTableWidget(len(books), 6)
             table.setHorizontalHeaderLabels(
                 ["ISBN", "Title", "Author", "Year", "Price", "Actions"]
@@ -414,11 +261,11 @@ class BookManagementSystem(QMainWindow):
             self.show_error_dialog(str(e))
             return
 
-        if self.is_isbn_duplicate(isbn):
+        if self.db_handler.is_isbn_duplicate(isbn):
             self.show_error_dialog("ISBN already exists.")
             return
 
-        self.insert_book(isbn, title, author, year, price)
+        self.db_handler.insert_book(isbn, title, author, year, price)
         self.show_success_dialog("Book added successfully.")
         self.show_main_page()
 
@@ -428,7 +275,7 @@ class BookManagementSystem(QMainWindow):
         year = self.year_input.text()
         price = self.price_input.text()
 
-        current_values = self.load_book_by_isbn(isbn)
+        current_values = self.db_handler.load_book_by_isbn(isbn)
         if (
             title == current_values[1]
             and author == current_values[2]
@@ -454,7 +301,7 @@ class BookManagementSystem(QMainWindow):
             self.show_error_dialog("Title and Author fields must be filled.")
             return
 
-        self.update_book(isbn, title, author, year, price)
+        self.db_handler.update_book(isbn, title, author, year, price)
 
         self.show_success_dialog("Book updated successfully.")
 
@@ -470,36 +317,11 @@ class BookManagementSystem(QMainWindow):
         )
 
         if confirmation == QMessageBox.Yes:
-            self.delete_book(book[0])
+            self.db_handler.delete_book(book[0])
 
             self.show_success_dialog("Book deleted successfully.")
 
             self.show_main_page()
-
-    def load_all_books(self):
-        query = "SELECT * FROM book"
-        return self.db_handler.fetch_data(query)
-
-    def is_isbn_duplicate(self, isbn):
-        query = "SELECT COUNT(*) FROM book WHERE ISBN = %s"
-        count = self.db_handler.fetch_data(query, (isbn,))[0][0]
-        return count > 0
-
-    def insert_book(self, isbn, title, author, year, price):
-        query = "INSERT INTO book (ISBN, title, author, year_published, price) VALUES (%s, %s, %s, %s, %s)"
-        self.db_handler.execute_query(query, (isbn, title, author, year, price))
-
-    def update_book(self, isbn, title, author, year, price):
-        query = "UPDATE book SET title = %s, author = %s, year_published = %s, price = %s WHERE ISBN = %s"
-        self.db_handler.execute_query(query, (title, author, year, price, isbn))
-
-    def delete_book(self, isbn):
-        query = "DELETE FROM book WHERE ISBN = %s"
-        self.db_handler.execute_query(query, (isbn,))
-
-    def load_book_by_isbn(self, isbn):
-        query = "SELECT * FROM book WHERE ISBN = %s"
-        return self.db_handler.fetch_data(query, (isbn,))[0]
 
     def show_success_dialog(self, message):
         QMessageBox.information(self, "Success", message, QMessageBox.Ok)
@@ -511,69 +333,8 @@ class BookManagementSystem(QMainWindow):
         QMessageBox.information(self, "Information", message, QMessageBox.Ok)
 
     def setup_database_connection(self):
-        while True:
-            config_path = self.get_config_path()
-            db_setup_dialog = DbSetupDialog(config_path)
-
-            if db_setup_dialog.exec_() != QDialog.Accepted:
-                break
-            username = db_setup_dialog.username_input.text()
-            password = db_setup_dialog.password_input.text()
-            host = db_setup_dialog.host_input.text()
-
-            try:
-                self.db_handler = DatabaseHandler(host, username, password, "PyQtLMS")
-                self.show_main_page()
-                break
-
-            except mysql.connector.Error as err:
-                QMessageBox.critical(
-                    self,
-                    "Error",
-                    "Unable to connect to the database. Please check your credentials and try again.",
-                    QMessageBox.Ok,
-                )
-
-                retry = QMessageBox.question(
-                    self,
-                    "Error",
-                    "Do you want to try again?",
-                    QMessageBox.Yes | QMessageBox.No,
-                    QMessageBox.No,
-                )
-
-                if retry == QMessageBox.No:
-                    break
-
-            except Exception as e:
-                print(f"Unexpected Error: {e}")
-                QMessageBox.critical(
-                    self,
-                    "Error",
-                    "An unexpected error occurred.",
-                    QMessageBox.Ok,
-                )
-                break
-
-    def handle_db_error(self, err):
-        print(f"Database Error: {err}")
-        QMessageBox.critical(self, "Error", f"Database Error: {err}", QMessageBox.Ok)
-
-    def get_config_path(self):
-        if sys.platform == "win32":
-            return os.path.join(os.getenv("APPDATA"), "PyQtLMS", "db_connection.ini")
-        elif sys.platform == "linux":
-            return os.path.join(
-                os.getenv("HOME"), ".config", "PyQtLMS", "db_connection.ini"
-            )
-
-
-def main():
-    app = QApplication(sys.argv)
-    main_window = BookManagementSystem()
-    main_window.show()
-    sys.exit(app.exec_())
-
-
-if __name__ == "__main__":
-    main()
+        if self.db_connection_handler.setup_database_connection(self):
+            self.db_handler = self.db_connection_handler.db_handler
+            self.show_main_page()
+        else:
+            self.close()
