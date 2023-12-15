@@ -282,7 +282,7 @@ class BookManagementSystem(QMainWindow):
             if year < 1900 or year > 2024:
                 raise ValueError("Year must be between 1900 and 2024.")
             if price <= 0 or price > 1000000:
-                raise ValueError("Price must be greater than 0 and less than 1000.")
+                raise ValueError("Price must be greater than 0 and less than 1000000.")
         except ValueError as e:
             self.show_error_dialog(str(e))
             return
