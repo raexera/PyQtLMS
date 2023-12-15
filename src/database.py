@@ -47,6 +47,10 @@ class DatabaseHandler:
             self.session.delete(book)
             self.session.commit()
 
+    def delete_all_books(self):
+        self.session.query(Book).delete()
+        self.session.commit()
+
     def is_isbn_duplicate(self, isbn):
         return self.session.query(Book).filter(Book.ISBN == isbn).count() > 0
 

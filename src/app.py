@@ -26,7 +26,7 @@ class BookManagementSystem(QMainWindow):
 
     def setup_base_window(self):
         self.setWindowTitle("Library Management System")
-        self.setMinimumSize(QSize(900, 600))
+        self.setMinimumSize(QSize(1800, 1200))
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -94,7 +94,7 @@ class BookManagementSystem(QMainWindow):
 
     def create_button(self, text, clicked_handler):
         button = QPushButton(text)
-        button.setMinimumSize(40, 20)
+        button.setMinimumSize(80, 40)
         button.setStyleSheet("padding: 4px 8px; color: #000;")
         button.clicked.connect(clicked_handler)
         return button
@@ -168,8 +168,11 @@ class BookManagementSystem(QMainWindow):
             table.horizontalHeader().setStretchLastSection(True)
 
             vertical_header = table.verticalHeader()
-            vertical_header.setDefaultSectionSize(50)
+            vertical_header.setDefaultSectionSize(100)
 
+            delete_all_book_button = QPushButton("Delete All Books")
+            delete_all_book_button.clicked.connect(self.confirm_delete_all_books)
+            self.main_layout.addWidget(delete_all_book_button)
         else:
             message_label = QLabel(
                 "No books found. Click the button below to add a new book."
@@ -347,9 +350,21 @@ class BookManagementSystem(QMainWindow):
 
         if confirmation == QMessageBox.Yes:
             self.db_handler.delete_book(book.ISBN)
-
             self.show_success_dialog("Book deleted successfully.")
+            self.show_main_page()
 
+    def confirm_delete_all_books(self):
+        confirmation = QMessageBox.question(
+            self,
+            "Confirmation",
+            f"Do you want to delete all books?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+
+        if confirmation == QMessageBox.Yes:
+            self.db_handler.delete_all_books()
+            self.show_success_dialog("All Books deleted successfully.")
             self.show_main_page()
 
     def show_success_dialog(self, message):
